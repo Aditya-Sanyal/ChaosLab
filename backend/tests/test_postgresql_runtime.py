@@ -6,7 +6,6 @@ import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import pgserver
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -34,6 +33,11 @@ def live_pg_url(tmp_path: Path):
         )
         yield pg_url
         return
+
+    try:
+        import pgserver
+    except ImportError:
+        pytest.skip("Set CHAOSLAB_TEST_POSTGRES_URL or install .[pgtest] extras.")
 
     pg_data = tmp_path / "pgdata"
     srv = pgserver.get_server(pg_data, cleanup_mode="stop")
