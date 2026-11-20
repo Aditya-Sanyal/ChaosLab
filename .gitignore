@@ -1,0 +1,52 @@
+# Secrets & local config (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Local data (databases, uploads, exports)
+*.db
+*.sqlite
+*.sqlite3
+data/
+uploads/
+exports/
+
+# Local non-synthetic imports must never be committed
+imports-local/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local-only docs & notes
+docs/demo.md
+docs/development-notebook.md
+docs/evaluation.md
+docs/ui-direction.md
+docs/adr/

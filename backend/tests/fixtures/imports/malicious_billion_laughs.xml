@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE lolz [
+  <!ENTITY lol "lol">
+  <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+  <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+]>
+<nmaprun scanner="nmap">
+  <host>
+    <status state="up"/>
+    <address addr="203.0.113.50" addrtype="ipv4"/>
+    <hostnames><hostname name="&lol3;.lab.example" type="PTR"/></hostnames>
+  </host>
+</nmaprun>

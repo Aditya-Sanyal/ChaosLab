@@ -1,0 +1,104 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-chaoslab}
+      POSTGRES_USER: ${POSTGRES_USER:-chaoslab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chaoslab} -d ${POSTGRES_DB:-chaoslab}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      CHAOSLAB_ENV: ${CHAOSLAB_ENV:-production}
+      CHAOSLAB_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-chaoslab}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-chaoslab}
+      CHAOSLAB_SECRET_KEY: ${CHAOSLAB_SECRET_KEY:?Set a strong >=32-char CHAOSLAB_SECRET_KEY in .env}
+      CHAOSLAB_COOKIE_SECURE: ${CHAOSLAB_COOKIE_SECURE:-true}
+      CHAOSLAB_CORS_ORIGINS: ${CHAOSLAB_CORS_ORIGINS:-["https://chaoslab.example"]}
+      CHAOSLAB_AUTO_SEED_DEMO: ${CHAOSLAB_AUTO_SEED_DEMO:-false}
+      CHAOSLAB_RETENTION_SNAPSHOTS_DAYS: ${CHAOSLAB_RETENTION_SNAPSHOTS_DAYS:-180}
+      CHAOSLAB_RETENTION_RUNS_DAYS: ${CHAOSLAB_RETENTION_RUNS_DAYS:-365}
+      CHAOSLAB_RETENTION_SESSIONS_GRACE_DAYS: ${CHAOSLAB_RETENTION_SESSIONS_GRACE_DAYS:-30}
+      CHAOSLAB_RETENTION_AUDIT_DAYS: ${CHAOSLAB_RETENTION_AUDIT_DAYS:-730}
+    networks:
+      - internal
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,nosuid,nodev,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=3)",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${CHAOSLAB_PORT:-8080}:8080"
+    networks:
+      - edge
+      - internal
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,nosuid,nodev,size=32m
+      - /var/cache/nginx:mode=1777,nosuid,nodev,size=32m
+      - /var/run:mode=1777,nosuid,nodev,size=8m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+
+networks:
+  edge:
+    driver: bridge
+  internal:
+    internal: true
+
+volumes:
+  pgdata:

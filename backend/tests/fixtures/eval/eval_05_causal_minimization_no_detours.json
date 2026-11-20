@@ -1,0 +1,54 @@
+{
+  "name": "eval_05_causal_minimization_no_detours",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 05"},
+    "zones": [
+      {"key": "internet", "name": "Internet", "trust_level": "untrusted", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0},
+      {"key": "dmz", "name": "DMZ", "trust_level": "low", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "app", "name": "App", "trust_level": "medium", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "data", "name": "Data", "trust_level": "high", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "assets": [
+      {"key": "decoy", "name": "Decoy", "type": "server", "zone_key": "dmz", "criticality": 2, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "app-main", "name": "App Main", "type": "application", "zone_key": "app", "criticality": 4, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "db-core", "name": "DB Core", "type": "data_store", "zone_key": "data", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "services": [],
+    "reachability": [
+      {"key": "RR-1", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "decoy", "ports": [80], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []},
+      {"key": "RR-2", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "app-main", "ports": [8080], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []},
+      {"key": "RR-3", "source_kind": "zone", "source_key": "app", "target_kind": "asset", "target_key": "db-core", "ports": [5432], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "relationships": [
+      {"key": "REL-CORE", "source_asset_key": "app-main", "target_asset_key": "db-core", "type": "has_credential_for", "attributes": {"port": 5432, "required_level": "user", "access_level": "user"}, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []}
+    ],
+    "findings": [
+      {"key": "F-DECOY", "title": "Decoy RCE", "category": "remote_exploitable", "severity": "critical", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "decoy", "port": 80, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []},
+      {"key": "F-APP", "title": "App RCE", "category": "remote_exploitable", "severity": "high", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "app-main", "port": 8080, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.85, "evidence_keys": []},
+      {"key": "F-PRIV", "title": "Unneeded local privesc", "category": "local_privesc", "severity": "critical", "status": "open", "grants": "admin", "requires_auth": true, "affected_assets": [{"asset_key": "app-main", "port": null, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "controls": [],
+    "evidence": []
+  },
+  "scenario": {
+    "name": "Causal Minimization",
+    "start_kind": "zone",
+    "start_key": "internet",
+    "targets": [{"asset_key": "db-core", "level": "user"}]
+  },
+  "expected_baseline": {
+    "headline_score": 41,
+    "total_paths": 1,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 41,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "app-main"], ["R-CRED-USE", "db-core"]]
+      }
+    ]
+  },
+  "actions": [],
+  "expected_modified": null
+}

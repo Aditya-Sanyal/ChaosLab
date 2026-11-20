@@ -1,0 +1,45 @@
+{
+  "name": "eval_04_intra_zone_lateral_and_isolation",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 04"},
+    "zones": [
+      {"key": "internal", "name": "Internal", "trust_level": "medium", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9}
+    ],
+    "assets": [
+      {"key": "host-1", "name": "Host 1", "type": "workstation", "zone_key": "internal", "criticality": 3, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "host-2", "name": "Host 2", "type": "server", "zone_key": "internal", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9}
+    ],
+    "services": [],
+    "reachability": [],
+    "relationships": [],
+    "findings": [
+      {"key": "F-LAT", "title": "Lateral SMB flaw", "category": "remote_exploitable", "severity": "high", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "host-2", "port": 445, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.8, "evidence_keys": []}
+    ],
+    "controls": [],
+    "evidence": []
+  },
+  "scenario": {
+    "name": "Intra-Zone Lateral",
+    "start_kind": "asset",
+    "start_key": "host-1",
+    "targets": [{"asset_key": "host-2", "level": "user"}]
+  },
+  "expected_baseline": {
+    "headline_score": 48,
+    "total_paths": 1,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 48,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "host-2"]]
+      }
+    ]
+  },
+  "actions": [{"kind": "set_zone_isolation", "params": {"zone_key": "internal", "intra_zone_policy": "deny"}}],
+  "expected_modified": {
+    "headline_score": 0,
+    "total_paths": 0
+  }
+}

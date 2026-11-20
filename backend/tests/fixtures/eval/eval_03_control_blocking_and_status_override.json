@@ -1,0 +1,92 @@
+{
+  "name": "eval_03_control_blocking_and_status_override",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 03"},
+    "zones": [
+      {"key": "internet", "name": "Internet", "trust_level": "untrusted", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0},
+      {"key": "dmz", "name": "DMZ", "trust_level": "low", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "assets": [
+      {"key": "srv-a", "name": "Srv A", "type": "server", "zone_key": "dmz", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "srv-b", "name": "Srv B", "type": "server", "zone_key": "dmz", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "srv-c", "name": "Srv C", "type": "server", "zone_key": "dmz", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9}
+    ],
+    "services": [],
+    "reachability": [
+      {"key": "RR-A", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "srv-a", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []},
+      {"key": "RR-B", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "srv-b", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []},
+      {"key": "RR-C", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "srv-c", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "relationships": [],
+    "findings": [
+      {
+        "key": "F-SHARED",
+        "title": "Shared TLS flaw",
+        "category": "remote_exploitable",
+        "severity": "high",
+        "status": "open",
+        "grants": "user",
+        "requires_auth": false,
+        "affected_assets": [
+          {"asset_key": "srv-a", "port": 443, "status_override": "remediated"},
+          {"asset_key": "srv-b", "port": 443, "status_override": null},
+          {"asset_key": "srv-c", "port": 443, "status_override": null}
+        ],
+        "origin": "imported",
+        "source": "eval",
+        "observed_at": "2026-11-18T00:00:00Z",
+        "confidence": 0.8,
+        "evidence_keys": ["EV-S"]
+      },
+      {
+        "key": "F-FP",
+        "title": "False positive alert",
+        "category": "remote_exploitable",
+        "severity": "critical",
+        "status": "false_positive",
+        "grants": "user",
+        "requires_auth": false,
+        "affected_assets": [{"asset_key": "srv-a", "port": 443, "status_override": null}],
+        "origin": "imported",
+        "source": "eval",
+        "observed_at": "2026-11-18T00:00:00Z",
+        "confidence": 0.9,
+        "evidence_keys": []
+      }
+    ],
+    "controls": [
+      {"key": "CTRL-ZERO", "name": "Full block WAF", "type": "waf", "asset_key": "srv-c", "affects_rules": ["R-EXP-REMOTE"], "ports": [443], "factor": 0.0, "status": "active", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0, "evidence_keys": []}
+    ],
+    "evidence": [
+      {"key": "EV-S", "kind": "scanner_output", "title": "EV S", "excerpt": "Synthetic EV S", "sha256": "es", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.8}
+    ]
+  },
+  "scenario": {
+    "name": "Status Override & Zero Block",
+    "start_kind": "zone",
+    "start_key": "internet",
+    "targets": [
+      {"asset_key": "srv-a", "level": "user"},
+      {"asset_key": "srv-b", "level": "user"},
+      {"asset_key": "srv-c", "level": "user"}
+    ]
+  },
+  "expected_baseline": {
+    "headline_score": 48,
+    "total_paths": 1,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 48,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "srv-b"]]
+      }
+    ]
+  },
+  "actions": [{"kind": "remediate_finding", "params": {"finding_key": "F-SHARED", "asset_key": "srv-b"}}],
+  "expected_modified": {
+    "headline_score": 0,
+    "total_paths": 0
+  }
+}

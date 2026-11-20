@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-app: #08101e;
+  --bg-rail: #0a1426;
+  --bg-panel: #0d182b;
+  --bg-elevated: #122139;
+  --bg-hover: #172a47;
+  --border: #1e3354;
+  --border-strong: #2d4c7a;
+  --text-main: #f1f5f9;
+  --text-muted: #93a8c7;
+  --text-dim: #6b84a8;
+  --accent: #f59e0b;
+  --accent-soft: rgba(245, 158, 11, 0.15);
+  --accent-border: rgba(245, 158, 11, 0.55);
+  --accent-fg: #1b1102;
+  --crit: #ef4444;
+  --crit-bg: rgba(239, 68, 68, 0.16);
+  --high: #fb923c;
+  --high-bg: rgba(251, 146, 60, 0.16);
+  --med: #fde047;
+  --med-bg: rgba(253, 224, 71, 0.14);
+  --low: #38bdf8;
+  --low-bg: rgba(56, 189, 248, 0.16);
+  --ok: #22c55e;
+  --ok-bg: rgba(34, 197, 94, 0.15);
+  --crown: #fbbf24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.mc-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.mc-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mc-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(147, 168, 199, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(147, 168, 199, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}

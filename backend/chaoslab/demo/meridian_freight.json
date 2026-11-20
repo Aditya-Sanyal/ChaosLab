@@ -1,0 +1,787 @@
+{
+  "environment": {
+    "name": "Meridian Freight (synthetic demo)",
+    "description": "Fictional logistics company environment for offline attack-path simulation. Uses RFC 5737 / RFC 2606 documentation ranges only.",
+    "is_demo": true
+  },
+  "default_provenance": {
+    "origin": "imported",
+    "source": "synthetic:meridian-freight@1",
+    "observed_at": "2026-11-18T14:00:00Z",
+    "confidence": 0.9
+  },
+  "zones": [
+    {
+      "key": "internet",
+      "name": "Internet (untrusted)",
+      "trust_level": "untrusted",
+      "intra_zone_policy": "allow",
+      "cidrs": ["0.0.0.0/0"],
+      "confidence": 1.0
+    },
+    {
+      "key": "dmz",
+      "name": "DMZ",
+      "trust_level": "low",
+      "intra_zone_policy": "deny",
+      "cidrs": ["203.0.113.0/24"],
+      "confidence": 0.95
+    },
+    {
+      "key": "corp",
+      "name": "Corporate LAN",
+      "trust_level": "medium",
+      "intra_zone_policy": "allow",
+      "cidrs": ["10.20.30.0/24"],
+      "confidence": 0.9
+    },
+    {
+      "key": "app",
+      "name": "App Servers",
+      "trust_level": "medium",
+      "intra_zone_policy": "allow",
+      "cidrs": ["10.20.20.0/24"],
+      "confidence": 0.9
+    },
+    {
+      "key": "data",
+      "name": "Data (restricted)",
+      "trust_level": "high",
+      "intra_zone_policy": "deny",
+      "cidrs": ["10.20.40.0/24"],
+      "confidence": 0.95
+    },
+    {
+      "key": "mgmt",
+      "name": "Management (restricted)",
+      "trust_level": "high",
+      "intra_zone_policy": "deny",
+      "cidrs": ["10.20.50.0/24"],
+      "confidence": 0.95
+    },
+    {
+      "key": "cloud",
+      "name": "Cloud VPC",
+      "trust_level": "medium",
+      "intra_zone_policy": "allow",
+      "cidrs": ["10.20.60.0/24"],
+      "confidence": 0.9
+    }
+  ],
+  "assets": [
+    {
+      "key": "web-01",
+      "name": "Public Customer Portal",
+      "type": "server",
+      "zone_key": "dmz",
+      "criticality": 4,
+      "owner": "Digital Commerce Team",
+      "hostname": "portal.meridian.example",
+      "ip_addresses": ["203.0.113.10"],
+      "os": "Ubuntu 22.04 LTS",
+      "tags": ["internet_facing", "customer_portal"],
+      "description": "Public HTTPS portal serving shipment tracking and order intake.",
+      "source": "nmap:dmz-2026-11-18.xml",
+      "confidence": 0.9,
+      "evidence_keys": ["EV-001"]
+    },
+    {
+      "key": "vpn-01",
+      "name": "Remote Access VPN Gateway",
+      "type": "network_device",
+      "zone_key": "dmz",
+      "criticality": 4,
+      "owner": "Infrastructure Network Ops",
+      "hostname": "vpn.meridian.example",
+      "ip_addresses": ["203.0.113.11"],
+      "os": "Hardened Appliance 7.x",
+      "tags": ["internet_facing", "remote_access"],
+      "description": "SSL VPN termination gateway for field engineers and operations.",
+      "source": "nmap:dmz-2026-11-18.xml",
+      "confidence": 0.85,
+      "evidence_keys": ["EV-002"]
+    },
+    {
+      "key": "mail-01",
+      "name": "External Mail Relay",
+      "type": "server",
+      "zone_key": "dmz",
+      "criticality": 3,
+      "owner": "Messaging Ops",
+      "hostname": "mx.meridian.example",
+      "ip_addresses": ["203.0.113.12"],
+      "os": "Debian 12",
+      "tags": ["internet_facing", "smtp"],
+      "description": "Inbound/outbound SMTP relay.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "app-01",
+      "name": "Order Processing API",
+      "type": "application",
+      "zone_key": "app",
+      "criticality": 4,
+      "owner": "Order Fulfillment Engineering",
+      "hostname": "orders-api.internal.meridian.example",
+      "ip_addresses": ["10.20.20.11"],
+      "os": "Ubuntu 22.04 LTS",
+      "tags": ["tier_app", "java"],
+      "description": "Core freight order processing microservice.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.85,
+      "evidence_keys": []
+    },
+    {
+      "key": "app-02",
+      "name": "Billing Ledger Service",
+      "type": "application",
+      "zone_key": "app",
+      "criticality": 3,
+      "owner": "Billing Engineering",
+      "hostname": "billing.internal.meridian.example",
+      "ip_addresses": ["10.20.20.12"],
+      "os": "Ubuntu 22.04 LTS",
+      "tags": ["tier_app"],
+      "description": "Invoice calculation service.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "db-01",
+      "name": "Customer Orders Database",
+      "type": "data_store",
+      "zone_key": "data",
+      "criticality": 5,
+      "owner": "Core Data Platform",
+      "hostname": "orders-db.data.meridian.example",
+      "ip_addresses": ["10.20.40.10"],
+      "os": "PostgreSQL 16 on Debian 12",
+      "tags": ["crown_jewel", "pii", "tier_data"],
+      "description": "Primary relational datastore containing customer shipment orders.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "files-01",
+      "name": "Finance File Share",
+      "type": "data_store",
+      "zone_key": "data",
+      "criticality": 4,
+      "owner": "Corporate IT",
+      "hostname": "finance-fs.data.meridian.example",
+      "ip_addresses": ["10.20.40.20"],
+      "os": "Windows Server 2022",
+      "tags": ["finance", "smb"],
+      "description": "Internal settlement and customs invoice archive.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "ws-101",
+      "name": "Finance Analyst Workstation",
+      "type": "workstation",
+      "zone_key": "corp",
+      "criticality": 2,
+      "owner": "Finance Operations",
+      "hostname": "fin-ws-101.corp.meridian.example",
+      "ip_addresses": ["10.20.30.101"],
+      "os": "Windows 11 Enterprise",
+      "tags": ["workstation"],
+      "description": "Endpoint operated by finance analyst.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "ws-102",
+      "name": "Logistics Dispatch Workstation",
+      "type": "workstation",
+      "zone_key": "corp",
+      "criticality": 2,
+      "owner": "Fleet Dispatch",
+      "hostname": "disp-ws-102.corp.meridian.example",
+      "ip_addresses": ["10.20.30.102"],
+      "os": "Windows 11 Enterprise",
+      "tags": ["workstation"],
+      "description": "Endpoint operated by dispatch coordinator.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "jump-01",
+      "name": "Admin Bastion Host",
+      "type": "server",
+      "zone_key": "mgmt",
+      "criticality": 4,
+      "owner": "Platform Security",
+      "hostname": "jump.mgmt.meridian.example",
+      "ip_addresses": ["10.20.50.10"],
+      "os": "Windows Server 2022",
+      "tags": ["bastion", "management"],
+      "description": "Administrative jump host required to reach directory infrastructure.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "dc-01",
+      "name": "Primary Directory Server",
+      "type": "server",
+      "zone_key": "mgmt",
+      "criticality": 5,
+      "owner": "Identity & Access Ops",
+      "hostname": "dc01.mgmt.meridian.example",
+      "ip_addresses": ["10.20.50.5"],
+      "os": "Windows Server 2022",
+      "tags": ["crown_jewel", "directory"],
+      "description": "Primary enterprise directory controller.",
+      "source": "csv:assets-meridian.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "ci-runner-01",
+      "name": "Build & Deploy Runner",
+      "type": "cloud_resource",
+      "zone_key": "cloud",
+      "criticality": 4,
+      "owner": "Release Engineering",
+      "hostname": "runner01.cloud.meridian.example",
+      "ip_addresses": ["10.20.60.15"],
+      "os": "Ubuntu 24.04 LTS",
+      "tags": ["ci_cd"],
+      "description": "Private CI runner handling release and backup jobs.",
+      "source": "json:cloud-vpc.json",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "bkt-backups",
+      "name": "Orders Backup Bucket",
+      "type": "cloud_resource",
+      "zone_key": "cloud",
+      "criticality": 5,
+      "owner": "Core Data Platform",
+      "hostname": "backups.cloud.meridian.example",
+      "ip_addresses": ["10.20.60.200"],
+      "os": "Managed Object Store",
+      "tags": ["crown_jewel", "backups"],
+      "description": "Object storage bucket holding encrypted database backups.",
+      "source": "json:cloud-vpc.json",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "id-it-admin",
+      "name": "IT Tier-0 Admin Group",
+      "type": "identity",
+      "zone_key": null,
+      "criticality": 5,
+      "owner": "Identity & Access Ops",
+      "hostname": null,
+      "ip_addresses": [],
+      "os": null,
+      "tags": ["privileged_identity"],
+      "description": "Directory group with administrative privileges over management servers.",
+      "source": "csv:identities.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "id-svc-orders",
+      "name": "Orders Service Account",
+      "type": "identity",
+      "zone_key": null,
+      "criticality": 3,
+      "owner": "Order Fulfillment Engineering",
+      "hostname": null,
+      "ip_addresses": [],
+      "os": null,
+      "tags": ["service_account"],
+      "description": "Service identity used by order processing to archive invoice PDFs.",
+      "origin": "manual",
+      "source": "user:sec-architect",
+      "confidence": 0.85,
+      "evidence_keys": []
+    }
+  ],
+  "services": [
+    {"key": "SVC-01", "asset_key": "web-01", "port": 443, "protocol": "tcp", "name": "https", "product": "nginx", "version": "1.24.0"},
+    {"key": "SVC-02", "asset_key": "vpn-01", "port": 443, "protocol": "tcp", "name": "sslvpn", "product": "MeridianVPN", "version": "7.1.2"},
+    {"key": "SVC-03", "asset_key": "mail-01", "port": 25, "protocol": "tcp", "name": "smtp", "product": "Postfix", "version": "3.7"},
+    {"key": "SVC-04", "asset_key": "app-01", "port": 8080, "protocol": "tcp", "name": "http-api", "product": "OrderAPI", "version": "2.4.1"},
+    {"key": "SVC-05", "asset_key": "app-02", "port": 8443, "protocol": "tcp", "name": "https-api", "product": "BillingAPI", "version": "1.9.0"},
+    {"key": "SVC-06", "asset_key": "db-01", "port": 5432, "protocol": "tcp", "name": "postgresql", "product": "PostgreSQL", "version": "16.4"},
+    {"key": "SVC-07", "asset_key": "files-01", "port": 445, "protocol": "tcp", "name": "smb", "product": "Windows SMB", "version": "3.1.1"},
+    {"key": "SVC-08", "asset_key": "jump-01", "port": 3389, "protocol": "tcp", "name": "rdp", "product": "Remote Desktop", "version": "10.0"},
+    {"key": "SVC-09", "asset_key": "dc-01", "port": 445, "protocol": "tcp", "name": "smb", "product": "AD DS", "version": "2022"},
+    {"key": "SVC-10", "asset_key": "ci-runner-01", "port": 22, "protocol": "tcp", "name": "ssh", "product": "OpenSSH", "version": "9.6"},
+    {"key": "SVC-11", "asset_key": "bkt-backups", "port": 443, "protocol": "tcp", "name": "object-api", "product": "ObjectStore", "version": "1.0"}
+  ],
+  "reachability": [
+    {
+      "key": "RR-01",
+      "source_kind": "zone",
+      "source_key": "internet",
+      "target_kind": "asset",
+      "target_key": "web-01",
+      "ports": [443],
+      "protocol": "tcp",
+      "description": "Edge firewall allows HTTPS from Internet to web-01.",
+      "confidence": 0.95,
+      "evidence_keys": ["EV-001"]
+    },
+    {
+      "key": "RR-02",
+      "source_kind": "zone",
+      "source_key": "internet",
+      "target_kind": "asset",
+      "target_key": "vpn-01",
+      "ports": [443],
+      "protocol": "tcp",
+      "description": "Edge firewall allows SSL VPN from Internet to vpn-01.",
+      "confidence": 0.95,
+      "evidence_keys": ["EV-002"]
+    },
+    {
+      "key": "RR-03",
+      "source_kind": "zone",
+      "source_key": "internet",
+      "target_kind": "asset",
+      "target_key": "mail-01",
+      "ports": [25],
+      "protocol": "tcp",
+      "description": "Edge firewall allows inbound SMTP to mail-01.",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "RR-04",
+      "source_kind": "zone",
+      "source_key": "dmz",
+      "target_kind": "zone",
+      "target_key": "app",
+      "ports": [8080],
+      "protocol": "tcp",
+      "description": "Broad DMZ-to-App firewall rule permitting TCP/8080 across zones.",
+      "confidence": 0.8,
+      "evidence_keys": ["EV-011"]
+    },
+    {
+      "key": "RR-05",
+      "source_kind": "asset",
+      "source_key": "vpn-01",
+      "target_kind": "asset",
+      "target_key": "app-01",
+      "ports": [8080],
+      "protocol": "tcp",
+      "description": "Explicit legacy rule allowing VPN appliance to reach Order API on 8080.",
+      "confidence": 0.9,
+      "evidence_keys": ["EV-010"]
+    },
+    {
+      "key": "RR-06",
+      "source_kind": "zone",
+      "source_key": "app",
+      "target_kind": "zone",
+      "target_key": "data",
+      "ports": [5432],
+      "protocol": "tcp",
+      "description": "App tier allowed to connect to Data zone PostgreSQL port 5432.",
+      "confidence": 0.95,
+      "evidence_keys": ["EV-012"]
+    },
+    {
+      "key": "RR-07",
+      "source_kind": "zone",
+      "source_key": "corp",
+      "target_kind": "asset",
+      "target_key": "jump-01",
+      "ports": [3389],
+      "protocol": "tcp",
+      "description": "Corporate workstations allowed RDP to administrative bastion.",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "RR-08",
+      "source_kind": "asset",
+      "source_key": "jump-01",
+      "target_kind": "asset",
+      "target_key": "dc-01",
+      "ports": [389, 445],
+      "protocol": "tcp",
+      "description": "Bastion allowed directory management ports to DC-01.",
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "RR-09",
+      "source_kind": "zone",
+      "source_key": "app",
+      "target_kind": "asset",
+      "target_key": "files-01",
+      "ports": [445],
+      "protocol": "tcp",
+      "description": "App zone permitted SMB access to finance archive share.",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "RR-10",
+      "source_kind": "asset",
+      "source_key": "ci-runner-01",
+      "target_kind": "asset",
+      "target_key": "bkt-backups",
+      "ports": [443],
+      "protocol": "tcp",
+      "description": "CI runner reaches backup bucket endpoint over private VPC.",
+      "confidence": 0.95,
+      "evidence_keys": []
+    }
+  ],
+  "relationships": [
+    {
+      "key": "REL-01",
+      "source_asset_key": "app-01",
+      "target_asset_key": "db-01",
+      "type": "has_credential_for",
+      "attributes": {
+        "port": 5432,
+        "required_level": "user",
+        "access_level": "user",
+        "material": "config_file"
+      },
+      "confidence": 0.9,
+      "evidence_keys": ["EV-014"]
+    },
+    {
+      "key": "REL-02",
+      "source_asset_key": "app-01",
+      "target_asset_key": "id-svc-orders",
+      "type": "has_credential_for",
+      "attributes": {
+        "required_level": "admin",
+        "material": "file"
+      },
+      "confidence": 0.85,
+      "evidence_keys": ["EV-016"]
+    },
+    {
+      "key": "REL-03",
+      "source_asset_key": "id-svc-orders",
+      "target_asset_key": "files-01",
+      "type": "can_access",
+      "attributes": {"port": 445},
+      "confidence": 0.85,
+      "evidence_keys": []
+    },
+    {
+      "key": "REL-04",
+      "source_asset_key": "ws-101",
+      "target_asset_key": "id-it-admin",
+      "type": "has_credential_for",
+      "attributes": {
+        "required_level": "admin",
+        "material": "memory"
+      },
+      "confidence": 0.9,
+      "evidence_keys": ["EV-017"]
+    },
+    {
+      "key": "REL-05",
+      "source_asset_key": "id-it-admin",
+      "target_asset_key": "jump-01",
+      "type": "admin_of",
+      "attributes": {"port": 3389},
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "REL-06",
+      "source_asset_key": "id-it-admin",
+      "target_asset_key": "dc-01",
+      "type": "admin_of",
+      "attributes": {"port": 445},
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "REL-07",
+      "source_asset_key": "ci-runner-01",
+      "target_asset_key": "bkt-backups",
+      "type": "has_credential_for",
+      "attributes": {
+        "port": 443,
+        "required_level": "user",
+        "access_level": "user",
+        "material": "iam_role"
+      },
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "REL-08",
+      "source_asset_key": "app-01",
+      "target_asset_key": "db-01",
+      "type": "depends_on",
+      "attributes": {},
+      "confidence": 0.95,
+      "evidence_keys": []
+    },
+    {
+      "key": "REL-09",
+      "source_asset_key": "app-02",
+      "target_asset_key": "db-01",
+      "type": "depends_on",
+      "attributes": {},
+      "confidence": 0.95,
+      "evidence_keys": []
+    }
+  ],
+  "findings": [
+    {
+      "key": "F-001",
+      "title": "Unrestricted file upload in portal (CWE-434)",
+      "category": "remote_exploitable",
+      "severity": "critical",
+      "status": "open",
+      "cwe": "CWE-434",
+      "cve": null,
+      "exploitability": null,
+      "grants": "user",
+      "requires_auth": false,
+      "description": "Uploaded attachment handlers do not validate extension or content type in the public portal.",
+      "remediation_notes": "Validate file extensions against an allowlist, store uploads outside web root, or deploy virtual patch via WAF.",
+      "confidence": 0.8,
+      "affected_assets": [{"asset_key": "web-01", "port": 443, "status_override": null}],
+      "evidence_keys": ["EV-003"]
+    },
+    {
+      "key": "F-002",
+      "title": "Outdated VPN firmware version (banner match)",
+      "category": "remote_exploitable",
+      "severity": "medium",
+      "status": "open",
+      "cwe": "CWE-1104",
+      "cve": null,
+      "exploitability": null,
+      "grants": "user",
+      "requires_auth": false,
+      "description": "External TLS banner suggests firmware version 7.1.2, which may carry unpatched pre-auth flaws.",
+      "remediation_notes": "Confirm exact patch level on the appliance and upgrade to supported 7.4 release.",
+      "confidence": 0.4,
+      "affected_assets": [{"asset_key": "vpn-01", "port": 443, "status_override": null}],
+      "evidence_keys": ["EV-004"]
+    },
+    {
+      "key": "F-003",
+      "title": "Sudo misconfiguration on app host (CWE-269)",
+      "category": "local_privesc",
+      "severity": "high",
+      "status": "open",
+      "cwe": "CWE-269",
+      "cve": null,
+      "exploitability": null,
+      "grants": "admin",
+      "requires_auth": true,
+      "description": "Service user may invoke diagnostic wrapper scripts as root without password prompt.",
+      "remediation_notes": "Restrict sudoers entries to signed read-only commands and require elevation auditing.",
+      "confidence": 0.85,
+      "affected_assets": [{"asset_key": "app-01", "port": null, "status_override": null}],
+      "evidence_keys": ["EV-007"]
+    },
+    {
+      "key": "F-005",
+      "title": "Unsafe deserialization in order API (CWE-502)",
+      "category": "remote_exploitable",
+      "severity": "high",
+      "status": "open",
+      "cwe": "CWE-502",
+      "cve": null,
+      "exploitability": null,
+      "grants": "user",
+      "requires_auth": false,
+      "description": "Internal order API deserializes untrusted payload objects on TCP/8080 without type allowlisting.",
+      "remediation_notes": "Replace binary object deserialization with strict JSON schema parsing.",
+      "confidence": 0.7,
+      "affected_assets": [{"asset_key": "app-01", "port": 8080, "status_override": null}],
+      "evidence_keys": ["EV-009"]
+    },
+    {
+      "key": "F-006",
+      "title": "Unquoted service path local privesc (CWE-428)",
+      "category": "local_privesc",
+      "severity": "medium",
+      "status": "open",
+      "cwe": "CWE-428",
+      "cve": null,
+      "exploitability": null,
+      "grants": "admin",
+      "requires_auth": true,
+      "description": "Telemetry agent binary path contains spaces without quotes under a writable directory.",
+      "remediation_notes": "Quote the service ImagePath registry entry and tighten folder ACLs.",
+      "confidence": 0.75,
+      "affected_assets": [{"asset_key": "ws-101", "port": null, "status_override": null}],
+      "evidence_keys": ["EV-015"]
+    }
+  ],
+  "controls": [
+    {
+      "key": "CTRL-01",
+      "name": "WAF virtual patch for upload endpoint",
+      "type": "waf",
+      "asset_key": "web-01",
+      "affects_rules": ["R-EXP-REMOTE"],
+      "ports": [443],
+      "factor": 0.5,
+      "status": "proposed",
+      "origin": "manual",
+      "source": "user:sec-architect",
+      "confidence": 0.9,
+      "evidence_keys": []
+    },
+    {
+      "key": "CTRL-02",
+      "name": "MFA enforced on bastion RDP",
+      "type": "mfa",
+      "asset_key": "jump-01",
+      "affects_rules": ["R-IDENTITY-ACCESS"],
+      "ports": [3389],
+      "factor": 0.2,
+      "status": "active",
+      "origin": "imported",
+      "source": "csv:controls-meridian.csv",
+      "confidence": 0.95,
+      "evidence_keys": []
+    }
+  ],
+  "evidence": [
+    {
+      "key": "EV-001",
+      "kind": "scanner_output",
+      "title": "Nmap DMZ service observation on web-01",
+      "excerpt": "Host 203.0.113.10 (portal.meridian.example): 443/tcp open ssl/https nginx 1.24.0",
+      "confidence": 0.95
+    },
+    {
+      "key": "EV-002",
+      "kind": "scanner_output",
+      "title": "Nmap DMZ service observation on vpn-01",
+      "excerpt": "Host 203.0.113.11 (vpn.meridian.example): 443/tcp open ssl/https MeridianVPN banner 7.1.2",
+      "confidence": 0.85
+    },
+    {
+      "key": "EV-003",
+      "kind": "manual_note",
+      "title": "Portal upload handler code review summary",
+      "excerpt": "Route /api/shipments/upload accepts arbitrary file extensions into served directory.",
+      "confidence": 0.8
+    },
+    {
+      "key": "EV-004",
+      "kind": "scanner_output",
+      "title": "Passive VPN banner version match",
+      "excerpt": "Banner HTTP header reports MeridianVPN/7.1.2 (unverified patch backports).",
+      "confidence": 0.4
+    },
+    {
+      "key": "EV-007",
+      "kind": "config_excerpt",
+      "title": "Sudoers rule excerpt on app-01",
+      "excerpt": "ordersvc ALL=(root) NOPASSWD: /opt/meridian/bin/diag-wrap.sh",
+      "confidence": 0.85
+    },
+    {
+      "key": "EV-009",
+      "kind": "config_excerpt",
+      "title": "Order API deserialization stack finding",
+      "excerpt": "Endpoint :8080/internal/batch reads ObjectInputStream without filter.",
+      "confidence": 0.7
+    },
+    {
+      "key": "EV-010",
+      "kind": "firewall_export",
+      "title": "Firewall rule FW-118 (vpn-01 to app-01)",
+      "excerpt": "PERMIT src=203.0.113.11 dst=10.20.20.11 proto=tcp dport=8080 comment=legacy-vpn-debug",
+      "confidence": 0.9
+    },
+    {
+      "key": "EV-011",
+      "kind": "firewall_export",
+      "title": "Firewall rule FW-042 (DMZ zone to App zone)",
+      "excerpt": "PERMIT src_zone=dmz dst_zone=app proto=tcp dport=8080 comment=portal-backend",
+      "confidence": 0.8
+    },
+    {
+      "key": "EV-012",
+      "kind": "firewall_export",
+      "title": "Firewall rule FW-089 (App zone to Data zone)",
+      "excerpt": "PERMIT src_zone=app dst_zone=data proto=tcp dport=5432 comment=orders-db",
+      "confidence": 0.95
+    },
+    {
+      "key": "EV-014",
+      "kind": "config_excerpt",
+      "title": "Application datasource config reference on app-01",
+      "excerpt": "orders_db_dsn=postgresql://orders_svc@10.20.40.10:5432/orders (secret redacted in import)",
+      "confidence": 0.9
+    },
+    {
+      "key": "EV-015",
+      "kind": "config_excerpt",
+      "title": "Windows service ImagePath observation on ws-101",
+      "excerpt": "ImagePath=C:\\Program Files\\Meridian Agent\\agent.exe (unquoted path)",
+      "confidence": 0.75
+    },
+    {
+      "key": "EV-016",
+      "kind": "manual_note",
+      "title": "Service account credential cache on app-01",
+      "excerpt": "Orders service account keytab readable by root on app-01 for finance archive drop.",
+      "confidence": 0.85
+    },
+    {
+      "key": "EV-017",
+      "kind": "manual_note",
+      "title": "IT admin cached interactive session on ws-101",
+      "excerpt": "Tier-0 helpdesk session observed cached in workstation memory during endpoint review.",
+      "confidence": 0.9
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "Internet to Customer Orders DB",
+      "description": "Models plausible paths from the untrusted Internet to the customer orders PostgreSQL database (db-01).",
+      "start_kind": "zone",
+      "start_key": "internet",
+      "start_level": "user",
+      "targets": [{"asset_key": "db-01", "level": "user"}],
+      "parameters": {"max_depth": 6, "k_paths": 5, "max_expansions": 20000}
+    },
+    {
+      "name": "Internet to Finance File Share",
+      "description": "Models remote entry, local privilege escalation on app-01, service-account harvesting, and access to finance file share.",
+      "start_kind": "zone",
+      "start_key": "internet",
+      "start_level": "user",
+      "targets": [{"asset_key": "files-01", "level": "user"}],
+      "parameters": {"max_depth": 6, "k_paths": 5, "max_expansions": 20000}
+    },
+    {
+      "name": "Workstation Assumed Breach to Domain Controller",
+      "description": "Assumed-breach scenario starting with user foothold on ws-101 targeting administrative control over dc-01.",
+      "start_kind": "asset",
+      "start_key": "ws-101",
+      "start_level": "user",
+      "targets": [{"asset_key": "dc-01", "level": "admin"}],
+      "parameters": {"max_depth": 6, "k_paths": 5, "max_expansions": 20000}
+    }
+  ]
+}

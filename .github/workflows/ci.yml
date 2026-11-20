@@ -1,0 +1,103 @@
+name: CHAOS LAB CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: chaoslab_test
+          POSTGRES_USER: chaoslab
+          POSTGRES_PASSWORD: ci-postgres-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U chaoslab -d chaoslab_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -e ".[dev,postgres]"
+      - name: Lint backend
+        working-directory: backend
+        run: ruff check chaoslab tests
+      - name: Run full backend test suite against live PostgreSQL 16 + SQLite
+        working-directory: backend
+        env:
+          CHAOSLAB_TEST_POSTGRES_URL: postgresql+psycopg://chaoslab:ci-postgres-password@127.0.0.1:5432/chaoslab_test
+        run: pytest -v
+
+  frontend-and-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Setup backend venv for E2E server
+        working-directory: backend
+        run: |
+          python -m venv .venv
+          ./.venv/bin/pip install -e ".[dev]"
+      - name: Install frontend dependencies & Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+      - name: Typecheck, Vitest, and Production Build
+        working-directory: frontend
+        run: |
+          npm run typecheck
+          npm run test
+          npm run build
+      - name: Run Playwright browser E2E suite
+        working-directory: frontend
+        run: npm run test:e2e
+
+  docker-compose-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose config and boot hardened stack
+        run: |
+          cat <<'EOF' > .env
+          CHAOSLAB_ENV=production
+          CHAOSLAB_SECRET_KEY=ci-only-ephemeral-secret-key-minimum-32-chars-long
+          CHAOSLAB_COOKIE_SECURE=false
+          CHAOSLAB_CORS_ORIGINS=["http://127.0.0.1:8080"]
+          CHAOSLAB_AUTO_SEED_DEMO=true
+          POSTGRES_DB=chaoslab
+          POSTGRES_USER=chaoslab
+          POSTGRES_PASSWORD=ci-only-postgres-password
+          CHAOSLAB_PORT=8080
+          EOF
+          docker compose config -q
+          docker compose up -d --build
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health/ready; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8080/api/health/ready
+      - name: Verify api container has no internet egress
+        run: |
+          docker compose exec -T api python -c "import socket, sys; s = socket.socket(); s.settimeout(2); sys.exit(0 if s.connect_ex(('192.0.2.1', 80)) != 0 else 1)"
+      - name: Teardown Compose stack
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,61 @@
+{
+  "name": "eval_02_privesc_identity_pivot",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 02"},
+    "zones": [
+      {"key": "internet", "name": "Internet", "trust_level": "untrusted", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0},
+      {"key": "app", "name": "App", "trust_level": "medium", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "mgmt", "name": "Mgmt", "trust_level": "high", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "assets": [
+      {"key": "api-01", "name": "API", "type": "application", "zone_key": "app", "criticality": 4, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "id-ops", "name": "Ops Identity", "type": "identity", "zone_key": null, "criticality": 4, "origin": "manual", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "bastion-01", "name": "Bastion", "type": "server", "zone_key": "mgmt", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "services": [],
+    "reachability": [
+      {"key": "RR-1", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "api-01", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": ["EV-1"]},
+      {"key": "RR-2", "source_kind": "zone", "source_key": "app", "target_kind": "asset", "target_key": "bastion-01", "ports": [22], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []}
+    ],
+    "relationships": [
+      {"key": "REL-KEY", "source_asset_key": "api-01", "target_asset_key": "id-ops", "type": "has_credential_for", "attributes": {"required_level": "admin", "material": "file"}, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.85, "evidence_keys": []},
+      {"key": "REL-ADM", "source_asset_key": "id-ops", "target_asset_key": "bastion-01", "type": "admin_of", "attributes": {"port": 22}, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "findings": [
+      {"key": "F-API", "title": "API RCE", "category": "remote_exploitable", "severity": "critical", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "api-01", "port": 443, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.85, "evidence_keys": ["EV-1"]},
+      {"key": "F-SUDO", "title": "Sudo privesc", "category": "local_privesc", "severity": "high", "status": "open", "grants": "admin", "requires_auth": true, "affected_assets": [{"asset_key": "api-01", "port": null, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []}
+    ],
+    "controls": [
+      {"key": "CTRL-MFA", "name": "SSH MFA", "type": "mfa", "asset_key": "bastion-01", "affects_rules": ["R-IDENTITY-ACCESS"], "ports": [22], "factor": 0.2, "status": "active", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "evidence": [
+      {"key": "EV-1", "kind": "scanner_output", "title": "EV 1", "excerpt": "Synthetic EV 1", "sha256": "e1", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9}
+    ]
+  },
+  "scenario": {
+    "name": "Internet to Bastion Admin",
+    "start_kind": "zone",
+    "start_key": "internet",
+    "targets": [{"asset_key": "bastion-01", "level": "admin"}]
+  },
+  "expected_baseline": {
+    "headline_score": 4,
+    "total_paths": 1,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 4,
+        "low_confidence": false,
+        "steps": [
+          ["R-EXP-REMOTE", "api-01"],
+          ["R-EXP-LOCAL", "api-01"],
+          ["R-CRED-HARVEST", "id-ops"],
+          ["R-IDENTITY-ACCESS", "bastion-01"]
+        ]
+      }
+    ]
+  },
+  "actions": [],
+  "expected_modified": null
+}

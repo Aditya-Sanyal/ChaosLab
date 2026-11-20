@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<nmaprun scanner="nmap">
+  <host>
+    <status state="up"/>
+    <address addr="203.0.113.50" addrtype="ipv4"/>
+    <hostnames><hostname name="&xxe;.lab.example" type="PTR"/></hostnames>
+  </host>
+</nmaprun>

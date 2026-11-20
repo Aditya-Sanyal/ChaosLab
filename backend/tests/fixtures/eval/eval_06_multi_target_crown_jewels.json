@@ -1,0 +1,58 @@
+{
+  "name": "eval_06_multi_target_crown_jewels",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 06"},
+    "zones": [
+      {"key": "internet", "name": "Internet", "trust_level": "untrusted", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0},
+      {"key": "dmz", "name": "DMZ", "trust_level": "low", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "isolated", "name": "Isolated", "trust_level": "high", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "assets": [
+      {"key": "cj-high", "name": "CJ High", "type": "data_store", "zone_key": "dmz", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "cj-lowconf", "name": "CJ LowConf", "type": "data_store", "zone_key": "dmz", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "cj-isolated", "name": "CJ Isolated", "type": "data_store", "zone_key": "isolated", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "services": [],
+    "reachability": [
+      {"key": "RR-H", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "cj-high", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []},
+      {"key": "RR-L", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "cj-lowconf", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": []}
+    ],
+    "relationships": [],
+    "findings": [
+      {"key": "F-H", "title": "High conf RCE", "category": "remote_exploitable", "severity": "critical", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "cj-high", "port": 443, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": []},
+      {"key": "F-L", "title": "Low conf banner", "category": "remote_exploitable", "severity": "medium", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "cj-lowconf", "port": 443, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.35, "evidence_keys": []}
+    ],
+    "controls": [],
+    "evidence": []
+  },
+  "scenario": {
+    "name": "Multi-target Crown Jewels",
+    "start_kind": "zone",
+    "start_key": "internet",
+    "targets": [
+      {"asset_key": "cj-high", "level": "user"},
+      {"asset_key": "cj-lowconf", "level": "user"},
+      {"asset_key": "cj-isolated", "level": "user"}
+    ]
+  },
+  "expected_baseline": {
+    "headline_score": 72,
+    "total_paths": 2,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 72,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "cj-high"]]
+      },
+      {
+        "modeled_score": 14,
+        "low_confidence": true,
+        "steps": [["R-EXP-REMOTE", "cj-lowconf"]]
+      }
+    ]
+  },
+  "actions": [],
+  "expected_modified": null
+}

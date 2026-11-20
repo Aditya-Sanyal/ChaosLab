@@ -1,0 +1,71 @@
+{
+  "name": "eval_01_direct_vs_zone_flow",
+  "snapshot": {
+    "schema_version": 1,
+    "environment": {"name": "Eval 01"},
+    "zones": [
+      {"key": "internet", "name": "Internet", "trust_level": "untrusted", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 1.0},
+      {"key": "dmz", "name": "DMZ", "trust_level": "low", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "app", "name": "App", "trust_level": "medium", "intra_zone_policy": "allow", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "data", "name": "Data", "trust_level": "high", "intra_zone_policy": "deny", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "assets": [
+      {"key": "web-a", "name": "Web A", "type": "server", "zone_key": "dmz", "criticality": 3, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "web-b", "name": "Web B", "type": "server", "zone_key": "dmz", "criticality": 3, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "app-1", "name": "App 1", "type": "application", "zone_key": "app", "criticality": 4, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "vault-1", "name": "Vault DB", "type": "data_store", "zone_key": "data", "criticality": 5, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95}
+    ],
+    "services": [],
+    "reachability": [
+      {"key": "RR-WEB-A", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "web-a", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": ["EV-01"]},
+      {"key": "RR-WEB-B", "source_kind": "zone", "source_key": "internet", "target_kind": "asset", "target_key": "web-b", "ports": [443], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": ["EV-02"]},
+      {"key": "RR-ZONE", "source_kind": "zone", "source_key": "dmz", "target_kind": "zone", "target_key": "app", "ports": [8080], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.8, "evidence_keys": ["EV-03"]},
+      {"key": "RR-DIRECT", "source_kind": "asset", "source_key": "web-b", "target_kind": "asset", "target_key": "app-1", "ports": [8080], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": ["EV-04"]},
+      {"key": "RR-DATA", "source_kind": "zone", "source_key": "app", "target_kind": "asset", "target_key": "vault-1", "ports": [5432], "protocol": "tcp", "description": "", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95, "evidence_keys": ["EV-05"]}
+    ],
+    "relationships": [
+      {"key": "REL-DB", "source_asset_key": "app-1", "target_asset_key": "vault-1", "type": "has_credential_for", "attributes": {"port": 5432, "required_level": "user", "access_level": "user"}, "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": ["EV-05"]}
+    ],
+    "findings": [
+      {"key": "F-WA", "title": "Upload flaw", "category": "remote_exploitable", "severity": "critical", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "web-a", "port": 443, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.85, "evidence_keys": ["EV-01"]},
+      {"key": "F-WB", "title": "Auth bypass", "category": "remote_exploitable", "severity": "high", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "web-b", "port": 443, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9, "evidence_keys": ["EV-02"]},
+      {"key": "F-APP", "title": "Deserialization", "category": "remote_exploitable", "severity": "high", "status": "open", "grants": "user", "requires_auth": false, "affected_assets": [{"asset_key": "app-1", "port": 8080, "status_override": null}], "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.85, "evidence_keys": ["EV-03"]}
+    ],
+    "controls": [],
+    "evidence": [
+      {"key": "EV-01", "kind": "scanner_output", "title": "EV 1", "excerpt": "Synthetic EV 1", "sha256": "e1", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "EV-02", "kind": "scanner_output", "title": "EV 2", "excerpt": "Synthetic EV 2", "sha256": "e2", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9},
+      {"key": "EV-03", "kind": "firewall_export", "title": "EV 3", "excerpt": "Synthetic EV 3", "sha256": "e3", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.8},
+      {"key": "EV-04", "kind": "firewall_export", "title": "EV 4", "excerpt": "Synthetic EV 4", "sha256": "e4", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.95},
+      {"key": "EV-05", "kind": "config_excerpt", "title": "EV 5", "excerpt": "Synthetic EV 5", "sha256": "e5", "origin": "imported", "source": "eval", "observed_at": "2026-11-18T00:00:00Z", "confidence": 0.9}
+    ]
+  },
+  "scenario": {
+    "name": "Internet to Vault",
+    "start_kind": "zone",
+    "start_key": "internet",
+    "targets": [{"asset_key": "vault-1", "level": "user"}]
+  },
+  "expected_baseline": {
+    "headline_score": 26,
+    "total_paths": 2,
+    "search_truncated": false,
+    "paths": [
+      {
+        "modeled_score": 26,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "web-a"], ["R-EXP-REMOTE", "app-1"], ["R-CRED-USE", "vault-1"]]
+      },
+      {
+        "modeled_score": 22,
+        "low_confidence": false,
+        "steps": [["R-EXP-REMOTE", "web-b"], ["R-EXP-REMOTE", "app-1"], ["R-CRED-USE", "vault-1"]]
+      }
+    ]
+  },
+  "actions": [{"kind": "remove_reachability", "params": {"reachability_key": "RR-ZONE"}}],
+  "expected_modified": {
+    "headline_score": 22,
+    "total_paths": 1
+  }
+}
